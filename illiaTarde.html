@@ -105,6 +105,7 @@
         // RECURSOS DISPONIBLES
         const STOCK_MAX_PC = 12;
         const STOCK_MAX_BIBLIO = 1;
+        const STOCK_MAX_CALCU = 3;
 
         const DIAS = ["lunes", "martes", "miercoles", "jueves", "viernes"];
         
@@ -176,6 +177,7 @@
                     
                     let pcsUsadas = 0;
                     let biblioUsada = 0;
+                    let calcuUsada = 0;
                     let renglonesHtml = "";
 
                     if (data[dia] && data[dia][mod.id]) {
@@ -185,14 +187,18 @@
 
                             if (res.tipo === "PC") pcsUsadas += res.cantidad || 0;
                             if (res.tipo === "BIBLIO") biblioUsada += res.cantidad || 0;
+                            if (res.tipo === "CALCU") calcuUsada += res.cantidad || 0;
                             
-                            const descRecurso = res.tipo === "BIBLIO" ? "📚 Biblioteca" : `💻 ${res.cantidad} PC/s`;
+                            const descRecurso = res.tipo === "BIBLIO" ? "📚 Biblioteca" : 
+                                                res.tipo === "CALCU" ? `🧮 ${res.cantidad} Caja/s Calcu` : 
+                                                `💻 ${res.cantidad} PC/s`;
                             renglonesHtml += `<p class="truncate text-xs">🔹 <b>${res.curso} ${res.division || ''}:</b> ${descRecurso}</p>`;
                         });
                     }
 
                     let pcsLibres = STOCK_MAX_PC - pcsUsadas;
                     let biblioLibre = STOCK_MAX_BIBLIO - biblioUsada;
+                    let calcuLibres = STOCK_MAX_CALCU - calcuUsada;
 
                     if (diaYaPaso) {
                         card.onclick = null;
@@ -201,7 +207,7 @@
                         card.className = "border-2 border-gray-200 bg-gray-100 p-4 rounded-lg cursor-not-allowed shadow-inner";
                         badge.className = "text-xs bg-gray-200 text-gray-500 px-2 py-0.5 rounded-full font-semibold";
                         
-                        if (pcsUsadas === 0 && biblioUsada === 0) {
+                        if (pcsUsadas === 0 && biblioUsada === 0 && calcuUsada === 0) {
                             badge.innerText = "Libre";
                             info.innerHTML = `<p class="text-xs italic text-gray-400">Sin reservas</p>`;
                         } else {
@@ -213,12 +219,12 @@
                         txtTitulo.className = "font-bold text-gray-800 text-sm";
                         info.className = "space-y-1 text-sm text-gray-700";
 
-                        if (pcsUsadas === 0 && biblioUsada === 0) {
+                        if (pcsUsadas === 0 && biblioUsada === 0 && calcuUsada === 0) {
                             card.className = "border-2 border-indigo-500 bg-indigo-50 p-4 rounded-lg cursor-pointer hover:bg-indigo-100 transition shadow-sm";
                             badge.className = "text-xs bg-indigo-200 text-indigo-800 px-2 py-0.5 rounded-full font-semibold";
                             badge.innerText = "Disponible";
-                            info.innerHTML = `<p class="text-xs text-gray-500">💻 Libres: ${STOCK_MAX_PC} | 📚 Biblio: Libre</p>`;
-                        } else if (pcsLibres <= 0 && biblioLibre <= 0) {
+                            info.innerHTML = `<p class="text-xs text-gray-500">💻 Libres: ${STOCK_MAX_PC} | 📚 Biblio: Libre | 🧮 Calcu: ${STOCK_MAX_CALCU}</p>`;
+                        } else if (pcsLibres <= 0 && biblioLibre <= 0 && calcuLibres <= 0) {
                             card.className = "border-2 border-red-500 bg-red-50 p-4 rounded-lg cursor-pointer hover:bg-red-100 transition shadow-sm opacity-90";
                             badge.className = "text-xs bg-red-200 text-red-800 px-2 py-0.5 rounded-full font-semibold";
                             badge.innerText = "Agotado";
@@ -226,7 +232,7 @@
                         } else {
                             card.className = "border-2 border-orange-500 bg-orange-50 p-4 rounded-lg cursor-pointer hover:bg-orange-100 transition shadow-sm";
                             badge.className = "text-xs bg-orange-200 text-orange-800 px-2 py-0.5 rounded-full font-semibold";
-                            badge.innerText = `Quedan ${pcsLibres} PC / Biblio ${biblioLibre > 0 ? 'Libre' : 'Ocupada'}`;
+                            badge.innerText = `Quedan ${pcsLibres} PC / ${calcuLibres} Calcu`;
                             info.innerHTML = renglonesHtml;
                         }
                     }
@@ -243,6 +249,7 @@
 
             let pcsUsadas = 0;
             let biblioUsada = 0;
+            let calcuUsada = 0;
             const divLista = document.getElementById("listaReservasActuales");
             divLista.innerHTML = "";
 
@@ -253,8 +260,11 @@
 
                     if (res.tipo === "PC") pcsUsadas += res.cantidad || 0;
                     if (res.tipo === "BIBLIO") biblioUsada += res.cantidad || 0;
+                    if (res.tipo === "CALCU") calcuUsada += res.cantidad || 0;
 
-                    const textoReserva = res.tipo === "BIBLIO" ? "Salón de Biblioteca" : `${res.cantidad} Computadora/s`;
+                    const textoReserva = res.tipo === "BIBLIO" ? "Salón de Biblioteca" : 
+                                        res.tipo === "CALCU" ? `${res.cantidad} Caja/s de Calculadoras` : 
+                                        `${res.cantidad} Computadora/s`;
 
                     divLista.innerHTML += `
                         <div class="flex justify-between items-center bg-white p-2 rounded border shadow-xs text-xs">
@@ -269,6 +279,7 @@
 
             let pcsLibres = STOCK_MAX_PC - pcsUsadas;
             let biblioLibre = STOCK_MAX_BIBLIO - biblioUsada;
+            let calcuLibres = STOCK_MAX_CALCU - calcuUsada;
 
             const selectRecurso = document.getElementById("recursoSelect");
             selectRecurso.innerHTML = '<option value="">Seleccionar recurso...</option>';
@@ -287,6 +298,15 @@
                 }
             } else {
                 selectRecurso.innerHTML += `<option value="" disabled class="text-red-500 font-semibold">❌ Computadoras Agotadas</option>`;
+            }
+
+            // Opción Cajas de Calculadoras (hasta 3)
+            if (calcuLibres > 0) {
+                for (let i = 1; i <= calcuLibres; i++) {
+                    selectRecurso.innerHTML += `<option value="CALCU-${i}">🧮 ${i} Caja${i > 1 ? 's' : ''} de Calculadoras (Disponibles: ${calcuLibres})</option>`;
+                }
+            } else {
+                selectRecurso.innerHTML += `<option value="" disabled class="text-red-500 font-semibold">❌ Cajas de Calculadoras Agotadas</option>`;
             }
 
             document.getElementById("miModal").classList.remove("hidden");
