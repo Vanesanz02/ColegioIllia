@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Reserva de Recursos - Colegio Arturo Illia</title>
+    <title>Reserva de Recursos - Colegio Arturo Illia (Turno Mañana)</title>
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
 </head>
@@ -13,7 +13,7 @@
         <header class="mb-8 text-center bg-white p-6 rounded-lg shadow-sm border border-gray-200">
             <!-- 🤫 TRIPLE CLIC EN EL TÍTULO PARA REINICIAR LA SEMANA -->
             <h1 id="tituloSecreto" class="text-3xl font-bold text-emerald-800 cursor-pointer select-none">
-                📱 Reserva de Recursos - Colegio Arturo Illia
+                📱 Reserva de Recursos - Colegio Arturo Illia (Mañana)
             </h1>
             <p class="text-gray-500 mt-1 text-sm">
                 Selecciona un módulo para gestionar o realizar tu reserva.
@@ -22,7 +22,7 @@
                 ⚠️ El profesor que solicita los recursos se responsabiliza por su uso y debe devolverlos/desocupar el espacio al finalizar el módulo.
             </p>
             <button id="btnLimpiarSemana" class="hidden mt-4 px-4 py-2 bg-red-600 hover:bg-red-700 text-white font-semibold text-xs rounded shadow uppercase tracking-wider transition mx-auto">
-                🔄 Reiniciar Toda la Semana (Admin)
+                🔄 Reiniciar Toda la Semana (Admin Mañana)
             </button>
         </header>
 
@@ -82,7 +82,7 @@
         </div>
     </div>
 
-    <!-- LÓGICA DE FIREBASE -->
+    <!-- LÓGICA DE FIREBASE (ARTURO ILLIA - TURNO MAÑANA) -->
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/12.15.0/firebase-app.js";
         import { getDatabase, ref, push, onValue, remove } from "https://www.gstatic.com/firebasejs/12.15.0/firebase-database.js";
@@ -101,12 +101,12 @@
         const app = initializeApp(firebaseConfig);
         const db = getDatabase(app);
 
-        // NODO SEGÚN TURNO (illia_reservas_manana / illia_reservas_tarde)
         const NODO_DB = "illia_reservas_manana";
 
         // RECURSOS DISPONIBLES
         const STOCK_MAX_PC = 12;
         const STOCK_MAX_BIBLIO = 1;
+        const STOCK_MAX_LABO = 1; // 👈 Espacio Laboratorio
         const STOCK_MAX_CALCU = 3;
 
         const DIAS = ["lunes", "martes", "miercoles", "jueves", "viernes"];
@@ -178,6 +178,7 @@
                     
                     let pcsUsadas = 0;
                     let biblioUsada = 0;
+                    let laboUsado = 0;
                     let calcuUsada = 0;
                     let renglonesHtml = "";
 
@@ -188,9 +189,11 @@
 
                             if (res.tipo === "PC") pcsUsadas += res.cantidad || 0;
                             if (res.tipo === "BIBLIO") biblioUsada += res.cantidad || 0;
+                            if (res.tipo === "LABO") laboUsado += res.cantidad || 0;
                             if (res.tipo === "CALCU") calcuUsada += res.cantidad || 0;
                             
                             const descRecurso = res.tipo === "BIBLIO" ? "📚 Biblioteca" : 
+                                                res.tipo === "LABO" ? "🔬 Laboratorio" : 
                                                 res.tipo === "CALCU" ? `🧮 ${res.cantidad} Caja/s Calcu` : 
                                                 `💻 ${res.cantidad} PC/s`;
                             renglonesHtml += `<p class="truncate text-xs">🔹 <b>${res.curso} ${res.division || ''}:</b> ${descRecurso}</p>`;
@@ -199,6 +202,7 @@
 
                     let pcsLibres = STOCK_MAX_PC - pcsUsadas;
                     let biblioLibre = STOCK_MAX_BIBLIO - biblioUsada;
+                    let laboLibre = STOCK_MAX_LABO - laboUsado;
                     let calcuLibres = STOCK_MAX_CALCU - calcuUsada;
 
                     if (diaYaPaso) {
@@ -208,7 +212,7 @@
                         card.className = "border-2 border-gray-200 bg-gray-100 p-4 rounded-lg cursor-not-allowed shadow-inner";
                         badge.className = "text-xs bg-gray-200 text-gray-500 px-2 py-0.5 rounded-full font-semibold";
                         
-                        if (pcsUsadas === 0 && biblioUsada === 0 && calcuUsada === 0) {
+                        if (pcsUsadas === 0 && biblioUsada === 0 && laboUsado === 0 && calcuUsada === 0) {
                             badge.innerText = "Libre";
                             info.innerHTML = `<p class="text-xs italic text-gray-400">Sin reservas</p>`;
                         } else {
@@ -220,12 +224,12 @@
                         txtTitulo.className = "font-bold text-gray-800 text-sm";
                         info.className = "space-y-1 text-sm text-gray-700";
 
-                        if (pcsUsadas === 0 && biblioUsada === 0 && calcuUsada === 0) {
+                        if (pcsUsadas === 0 && biblioUsada === 0 && laboUsado === 0 && calcuUsada === 0) {
                             card.className = "border-2 border-emerald-500 bg-emerald-50 p-4 rounded-lg cursor-pointer hover:bg-emerald-100 transition shadow-sm";
                             badge.className = "text-xs bg-emerald-200 text-emerald-800 px-2 py-0.5 rounded-full font-semibold";
                             badge.innerText = "Disponible";
-                            info.innerHTML = `<p class="text-xs text-gray-500">💻 Libres: ${STOCK_MAX_PC} | 📚 Biblio: Libre | 🧮 Calcu: ${STOCK_MAX_CALCU}</p>`;
-                        } else if (pcsLibres <= 0 && biblioLibre <= 0 && calcuLibres <= 0) {
+                            info.innerHTML = `<p class="text-xs text-gray-500">💻 PC: ${STOCK_MAX_PC} | 📚 Biblio | 🔬 Labo</p>`;
+                        } else if (pcsLibres <= 0 && biblioLibre <= 0 && laboLibre <= 0 && calcuLibres <= 0) {
                             card.className = "border-2 border-red-500 bg-red-50 p-4 rounded-lg cursor-pointer hover:bg-red-100 transition shadow-sm opacity-90";
                             badge.className = "text-xs bg-red-200 text-red-800 px-2 py-0.5 rounded-full font-semibold";
                             badge.innerText = "Agotado";
@@ -250,6 +254,7 @@
 
             let pcsUsadas = 0;
             let biblioUsada = 0;
+            let laboUsado = 0;
             let calcuUsada = 0;
             const divLista = document.getElementById("listaReservasActuales");
             divLista.innerHTML = "";
@@ -261,9 +266,11 @@
 
                     if (res.tipo === "PC") pcsUsadas += res.cantidad || 0;
                     if (res.tipo === "BIBLIO") biblioUsada += res.cantidad || 0;
+                    if (res.tipo === "LABO") laboUsado += res.cantidad || 0;
                     if (res.tipo === "CALCU") calcuUsada += res.cantidad || 0;
 
                     const textoReserva = res.tipo === "BIBLIO" ? "Salón de Biblioteca" : 
+                                        res.tipo === "LABO" ? "Espacio de Laboratorio" : 
                                         res.tipo === "CALCU" ? `${res.cantidad} Caja/s de Calculadoras` : 
                                         `${res.cantidad} Computadora/s`;
 
@@ -280,6 +287,7 @@
 
             let pcsLibres = STOCK_MAX_PC - pcsUsadas;
             let biblioLibre = STOCK_MAX_BIBLIO - biblioUsada;
+            let laboLibre = STOCK_MAX_LABO - laboUsado;
             let calcuLibres = STOCK_MAX_CALCU - calcuUsada;
 
             const selectRecurso = document.getElementById("recursoSelect");
@@ -292,7 +300,14 @@
                 selectRecurso.innerHTML += `<option value="" disabled class="text-red-500 font-semibold">❌ Biblioteca Ocupada en este módulo</option>`;
             }
 
-            // Opción Computadoras (hasta 12)
+            // Opción Laboratorio
+            if (laboLibre > 0) {
+                selectRecurso.innerHTML += `<option value="LABO-1">🔬 Espacio de Laboratorio (Disponible)</option>`;
+            } else {
+                selectRecurso.innerHTML += `<option value="" disabled class="text-red-500 font-semibold">❌ Laboratorio Ocupado en este módulo</option>`;
+            }
+
+            // Opción Computadoras
             if (pcsLibres > 0) {
                 for (let i = 1; i <= pcsLibres; i++) {
                     selectRecurso.innerHTML += `<option value="PC-${i}">💻 ${i} Computadora${i > 1 ? 's' : ''} (Disponibles: ${pcsLibres})</option>`;
@@ -301,7 +316,7 @@
                 selectRecurso.innerHTML += `<option value="" disabled class="text-red-500 font-semibold">❌ Computadoras Agotadas</option>`;
             }
 
-            // Opción Cajas de Calculadoras (hasta 3)
+            // Opción Cajas de Calculadoras
             if (calcuLibres > 0) {
                 for (let i = 1; i <= calcuLibres; i++) {
                     selectRecurso.innerHTML += `<option value="CALCU-${i}">🧮 ${i} Caja${i > 1 ? 's' : ''} de Calculadoras (Disponibles: ${calcuLibres})</option>`;
@@ -348,7 +363,7 @@
 
         // Reinicio semanal oculto (Triple Clic)
         document.getElementById("btnLimpiarSemana").onclick = function() {
-            if (confirm("⚠️ ¿Deseas reiniciar TODA la semana a cero?")) {
+            if (confirm("⚠️ ¿Deseas reiniciar TODA la semana del Colegio Arturo Illia a cero?")) {
                 remove(ref(db, NODO_DB)).then(() => {
                     alert("¡Semana reiniciada exitosamente!");
                     document.getElementById("btnLimpiarSemana").classList.add("hidden");
