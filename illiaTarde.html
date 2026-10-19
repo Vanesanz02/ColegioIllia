@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Reserva de Recursos - Colegio Arturo Illia (Turno Mañana)</title>
+    <title>Reserva de Recursos - Colegio Arturo Illia (Turno Tarde)</title>
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
 </head>
@@ -12,8 +12,8 @@
     <div class="max-w-6xl mx-auto">
         <header class="mb-8 text-center bg-white p-6 rounded-lg shadow-sm border border-gray-200">
             <!-- 🤫 TRIPLE CLIC EN EL TÍTULO PARA REINICIAR LA SEMANA -->
-            <h1 id="tituloSecreto" class="text-3xl font-bold text-emerald-800 cursor-pointer select-none">
-                📱 Reserva de Recursos - Colegio Arturo Illia (Mañana)
+            <h1 id="tituloSecreto" class="text-3xl font-bold text-indigo-800 cursor-pointer select-none">
+                📱 Reserva de Recursos - Colegio Arturo Illia (Tarde)
             </h1>
             <p class="text-gray-500 mt-1 text-sm">
                 Selecciona un módulo para gestionar o realizar tu reserva.
@@ -22,7 +22,7 @@
                 ⚠️ El profesor que solicita los recursos se responsabiliza por su uso y debe devolverlos/desocupar el espacio al finalizar el módulo.
             </p>
             <button id="btnLimpiarSemana" class="hidden mt-4 px-4 py-2 bg-red-600 hover:bg-red-700 text-white font-semibold text-xs rounded shadow uppercase tracking-wider transition mx-auto">
-                🔄 Reiniciar Toda la Semana (Admin Mañana)
+                🔄 Reiniciar Toda la Semana (Admin Tarde)
             </button>
         </header>
 
@@ -33,7 +33,7 @@
     <!-- VENTANA FLOTANTE (MODAL DE RESERVA) -->
     <div id="miModal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center hidden p-4 z-50">
         <div class="bg-white p-6 rounded-lg shadow-2xl max-w-md w-full max-h-[90vh] overflow-y-auto">
-            <h3 id="modalTitulo" class="text-xl font-bold text-emerald-800 mb-2">Gestionar Módulo</h3>
+            <h3 id="modalTitulo" class="text-xl font-bold text-indigo-800 mb-2">Gestionar Módulo</h3>
             
             <div class="mb-4 bg-gray-50 p-3 rounded border">
                 <h4 class="text-xs font-bold text-gray-500 uppercase tracking-wide mb-2">Reservas en este turno:</h4>
@@ -47,7 +47,7 @@
                 
                 <div class="mb-3">
                     <label class="block text-xs font-semibold text-gray-600 mb-1">Curso:</label>
-                    <select id="inputCurso" required class="w-full border rounded p-2 bg-gray-50 outline-none focus:ring-2 focus:ring-emerald-500">
+                    <select id="inputCurso" required class="w-full border rounded p-2 bg-gray-50 outline-none focus:ring-2 focus:ring-indigo-500">
                         <option value="">Seleccionar curso...</option>
                         <option value="1° Año">1° Año</option>
                         <option value="2° Año">2° Año</option>
@@ -61,30 +61,30 @@
 
                 <div class="mb-3">
                     <label class="block text-xs font-semibold text-gray-600 mb-1">División / Orientación:</label>
-                    <select id="inputDivision" required class="w-full border rounded p-2 bg-gray-50 outline-none focus:ring-2 focus:ring-emerald-500">
+                    <select id="inputDivision" required class="w-full border rounded p-2 bg-gray-50 outline-none focus:ring-2 focus:ring-indigo-500">
                         <option value="">Seleccionar división...</option>
                         <option value="Primera">Primera</option>
                         <option value="Segunda">Segunda</option>
-                        <option value="Primera">Ed. Fisica</option>
-                        <option value="Segunda">Comunicacion</option>
+                        <option value="Ed. Fisica">Ed. Fisica</option>
+                        <option value="Comunicacion">Comunicacion</option>
                         <option value="Trayectoria">Trayectoria</option>
                     </select>
                 </div>
 
                 <div class="mb-6">
                     <label class="block text-xs font-semibold text-gray-600 mb-1">Recurso a solicitar:</label>
-                    <select id="recursoSelect" required class="w-full border rounded p-2 bg-gray-50 outline-none focus:ring-2 focus:ring-emerald-500"></select>
+                    <select id="recursoSelect" required class="w-full border rounded p-2 bg-gray-50 outline-none focus:ring-2 focus:ring-indigo-500"></select>
                 </div>
 
                 <div class="flex justify-end space-x-3">
                     <button id="btnCancelar" type="button" class="px-4 py-2 bg-gray-300 hover:bg-gray-400 text-gray-800 rounded font-medium transition text-sm">Cerrar</button>
-                    <button type="submit" class="px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white rounded font-medium transition shadow text-sm">Confirmar Reserva</button>
+                    <button type="submit" class="px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded font-medium transition shadow text-sm">Confirmar Reserva</button>
                 </div>
             </form>
         </div>
     </div>
 
-    <!-- LÓGICA DE FIREBASE (ARTURO ILLIA - TURNO MAÑANA) -->
+    <!-- LÓGICA DE FIREBASE (ARTURO ILLIA - TURNO TARDE) -->
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/12.15.0/firebase-app.js";
         import { getDatabase, ref, push, onValue, remove } from "https://www.gstatic.com/firebasejs/12.15.0/firebase-database.js";
@@ -103,21 +103,23 @@
         const app = initializeApp(firebaseConfig);
         const db = getDatabase(app);
 
-        const NODO_DB = "illia_reservas_manana";
+        // NODO EN BASE DE DATOS EXCLUSIVO PARA EL TURNO TARDE
+        const NODO_DB = "illia_reservas_tarde";
 
         // RECURSOS DISPONIBLES
         const STOCK_MAX_PC = 12;
         const STOCK_MAX_BIBLIO = 1;
-        const STOCK_MAX_LABO = 1; // 👈 Espacio Laboratorio
+        const STOCK_MAX_LABO = 1;
         const STOCK_MAX_CALCU = 3;
 
         const DIAS = ["lunes", "martes", "miercoles", "jueves", "viernes"];
         
+        // HORARIOS TURNO TARDE
         const MODULOS = [
-            { id: "modulo1", nombre: "1° Módulo", horario: "07:45 a 09:05 hs" },
-            { id: "modulo2", nombre: "2° Módulo", horario: "09:20 a 10:40 hs" },
-            { id: "modulo3", nombre: "3° Módulo", horario: "10:50 a 12:10 hs" },
-            { id: "poshora", nombre: "Poshora (7ª hs)", horario: "12:10 a 12:50 hs" }
+            { id: "modulo1", nombre: "1° Módulo", horario: "13:15 a 14:35 hs" },
+            { id: "modulo2", nombre: "2° Módulo", horario: "14:45 a 16:05 hs" },
+            { id: "modulo3", nombre: "3° Módulo", horario: "16:20 a 17:40 hs" },
+            { id: "poshora", nombre: "Poshora (7ª hs)", horario: "17:40 a 18:20 hs" }
         ];
 
         let diaActual = "";
@@ -143,7 +145,7 @@
             });
 
             contenedor.innerHTML += `
-                <div id="box-dia-${dia}" class="bg-white p-6 rounded-lg shadow-md border-t-4 border-emerald-600">
+                <div id="box-dia-${dia}" class="bg-white p-6 rounded-lg shadow-md border-t-4 border-indigo-600">
                     <h2 id="head-dia-${dia}" class="text-2xl font-bold mb-4 border-b pb-2 uppercase flex items-center justify-between text-gray-800">
                         <span>📅 ${dia}</span>
                     </h2>
@@ -167,7 +169,7 @@
                     boxDia.className = "bg-white p-6 rounded-lg shadow-sm border-t-4 border-gray-300 bg-gray-50 opacity-75";
                     headDia.className = "text-2xl font-bold text-gray-400 mb-4 border-b pb-2 uppercase flex items-center justify-between";
                 } else {
-                    boxDia.className = "bg-white p-6 rounded-lg shadow-md border-t-4 border-emerald-600";
+                    boxDia.className = "bg-white p-6 rounded-lg shadow-md border-t-4 border-indigo-600";
                     headDia.className = "text-2xl font-bold text-gray-800 mb-4 border-b pb-2 uppercase flex items-center justify-between";
                 }
 
@@ -227,8 +229,8 @@
                         info.className = "space-y-1 text-sm text-gray-700";
 
                         if (pcsUsadas === 0 && biblioUsada === 0 && laboUsado === 0 && calcuUsada === 0) {
-                            card.className = "border-2 border-emerald-500 bg-emerald-50 p-4 rounded-lg cursor-pointer hover:bg-emerald-100 transition shadow-sm";
-                            badge.className = "text-xs bg-emerald-200 text-emerald-800 px-2 py-0.5 rounded-full font-semibold";
+                            card.className = "border-2 border-indigo-500 bg-indigo-50 p-4 rounded-lg cursor-pointer hover:bg-indigo-100 transition shadow-sm";
+                            badge.className = "text-xs bg-indigo-200 text-indigo-800 px-2 py-0.5 rounded-full font-semibold";
                             badge.innerText = "Disponible";
                             info.innerHTML = `<p class="text-xs text-gray-500">💻 PC: ${STOCK_MAX_PC} | 📚 Biblio | 🔬 Labo</p>`;
                         } else if (pcsLibres <= 0 && biblioLibre <= 0 && laboLibre <= 0 && calcuLibres <= 0) {
@@ -365,9 +367,9 @@
 
         // Reinicio semanal oculto (Triple Clic)
         document.getElementById("btnLimpiarSemana").onclick = function() {
-            if (confirm("⚠️ ¿Deseas reiniciar TODA la semana del Colegio Arturo Illia a cero?")) {
+            if (confirm("⚠️ ¿Deseas reiniciar TODA la semana del Colegio Arturo Illia (Turno Tarde) a cero?")) {
                 remove(ref(db, NODO_DB)).then(() => {
-                    alert("¡Semana reiniciada exitosamente!");
+                    alert("¡Semana del Turno Tarde reiniciada exitosamente!");
                     document.getElementById("btnLimpiarSemana").classList.add("hidden");
                 });
             }
